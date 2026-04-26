@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>samvarth seegehalli nhs service project</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-icons">
+            <button id="backButton" class="icon-button" type="button" aria-label="Back">←</button>
+            <button id="composeButton" class="icon-button" type="button" aria-label="Compose">✎</button>
+          </div>
+
+          <nav class="menu-card">
+            <button class="menu-item active" type="button" data-menu="sessions">
+              <span class="menu-icon">◫</span>
+              <span>Tutor Sessions</span>
+            </button>
+            <button class="menu-item" type="button" data-menu="practice">
+              <span class="menu-icon">◇</span>
+              <span>Practice Sets</span>
+            </button>
+          </nav>
+
+          <section class="sidebar-section">
+            <p class="sidebar-heading">Recent Chats</p>
+            <div id="recentChats" class="recent-chats">
+              <p class="sidebar-muted">No chats yet</p>
+            </div>
+          </section>
+        </div>
+
+        <div class="sidebar-bottom">
+          <div class="promo-card">
+            <p class="promo-badge">Jasper Only</p>
+            <h3>Only for Jasper High School students</h3>
+            <p>
+              Built for tutoring support, guided explanations, and optional answer reveal
+              after you choose.
+            </p>
+            <button id="projectButton" class="promo-button" type="button">NHS Service Project</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div class="topbar-spacer"></div>
+          <div class="topbar-actions">
+            <button id="themeToggle" class="ghost-button" type="button">Light Mode</button>
+            <button id="aboutButton" class="topbar-button" type="button">About</button>
+            <button id="accessButton" class="topbar-button" type="button">Student Access</button>
+          </div>
+        </header>
+
+        <section class="hero-block">
+          <div class="hero-mark">√</div>
+            <h1>
+              <span class="line1">samvarth seegehalli<br></span>
+              <span class="line2">nhs service project</span>
+            </h1>
+          <p class="hero-subtitle">Only for Jasper High School students.</p>
+          <p class="hero-description">
+          </p>
+          <p id="modeDescription" class="mode-description">
+            Math Tutor is active. Ask any math question for guided help without revealing the
+            final answer right away.
+          </p>
+
+          <div class="mode-tabs" aria-label="Tutor modes">
+            <button class="mode-tab active" type="button" data-mode="Math Tutor">Math Tutor</button>
+            <button class="mode-tab" type="button" data-mode="Algebra">Algebra</button>
+            <button class="mode-tab" type="button" data-mode="Geometry">Geometry</button>
+            <button class="mode-tab" type="button" data-mode="Calculus">Calculus</button>
+          </div>
+        </section>
+
+        <section class="composer-panel">
+          <div class="query-card">
+            <label for="question" class="visually-hidden">Enter a math problem</label>
+            <textarea
+              id="question"
+              placeholder="Type a math question here..."
+              spellcheck="false"
+            ></textarea>
+
+            <div class="query-toolbar">
+              <div class="toolbar-left">
+                <button id="inputPill" class="tool-pill tool-button" type="button">Math Input</button>
+                <span id="modePill" class="tool-pill">Mode: Math Tutor</span>
+              </div>
+              <div class="toolbar-right">
+                <button id="clearButton" class="secondary-button" type="button">Clear</button>
+                <button id="explainButton" class="primary-button">Explain First</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="mathInputPanel" class="math-input-panel hidden">
+            <div class="math-input-header">
+              <div>
+                <p class="card-label">Math Input</p>
+                <p id="mathInputModeLabel" class="math-input-mode-label">Math Tutor symbols</p>
+              </div>
+              <p class="math-input-help">Click a symbol to insert it into the question box.</p>
+            </div>
+            <div id="mathGrid" class="math-grid"></div>
+          </div>
+
+          <p id="status" class="status"></p>
+        </section>
+
+        <section id="results" class="results hidden">
+          <div class="results-grid">
+            <article class="result-card result-highlight">
+              <p class="card-label">Problem Type</p>
+              <h2 id="problemType">-</h2>
+              <p id="summary" class="summary"></p>
+            </article>
+
+            <article class="result-card">
+              <p class="card-label">What To Notice</p>
+              <ul id="whatToNotice" class="bullet-list"></ul>
+            </article>
+
+            <article class="result-card">
+              <p class="card-label">How To Approach It</p>
+              <ol id="strategy" class="number-list"></ol>
+            </article>
+
+            <article class="result-card">
+              <p class="card-label">Check Your Work</p>
+              <ul id="checkpoints" class="bullet-list"></ul>
+            </article>
+          </div>
+
+          <article class="decision-card">
+            <p class="card-label">Choose What Happens Next</p>
+            <p id="encouragement" class="encouragement"></p>
+            <p id="followUpQuestion" class="follow-up"></p>
+            <div class="decision-actions">
+              <button id="answerButton" class="primary-button">Show Me The Answer</button>
+              <button id="selfSolveButton" class="secondary-button" type="button">
+                I Want To Solve It Myself
+              </button>
+            </div>
+            <p id="selfSolveMessage" class="self-solve-message hidden">
+              Nice. Work through it on your own, then come back if you want to compare with
+              the tutor's answer.
+            </p>
+          </article>
+
+          <article id="answerCard" class="answer-card hidden">
+            <p class="card-label">Answer</p>
+            <h3 id="finalAnswer">-</h3>
+            <div class="answer-grid">
+              <div>
+                <h4>Worked Solution</h4>
+                <ol id="workedSolution" class="number-list"></ol>
+              </div>
+              <div>
+                <h4>How To Verify</h4>
+                <ul id="verification" class="bullet-list"></ul>
+              </div>
+            </div>
+            <p id="nextStep" class="next-step"></p>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="modalTitle">Info</h2>
+          <button id="closeModalButton" class="icon-button" type="button" aria-label="Close">×</button>
+        </div>
+        <p id="modalBody" class="modal-body"></p>
+      </div>
+    </div>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
