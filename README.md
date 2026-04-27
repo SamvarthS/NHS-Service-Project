@@ -1,4 +1,4 @@
-# AI Math Tutor
+# Math Tutor
 
 A small math tutor web app that:
 
