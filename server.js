@@ -31,6 +31,9 @@ const answerSchema = z.object({
   nextStep: z.string()
 });
 
+const mathFormattingRules =
+  "Formatting rules: every mathematical expression must use valid LaTeX delimiters. Use \\(...\\) for inline math and \\[...\\] for display math. Never write plain-text math like x^2, 1/3, integral x^2 dx, or d/dx unless it is wrapped in LaTeX. Examples: write \\(x^2\\), \\(\\frac{1}{3}x^3 + C\\), \\[\\int x^2\\,dx\\], and \\(\\frac{d}{dx}(x^3) = 3x^2\\).";
+
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(".", { dotfiles: "ignore", index: "index.html" }));
 
@@ -61,7 +64,7 @@ app.post("/api/tutor/explain", async (req, res) => {
             {
               type: "input_text",
               text:
-                "You are a patient math tutor. Explain how a student should approach the problem without actually solving it, without revealing the final answer, and without performing the decisive arithmetic or algebraic simplification that gives the answer away. Focus on strategy, concepts, what to notice, and self-checks. End by asking whether the student wants the answer or wants to solve it alone."
+                `You are a patient math tutor. Explain how a student should approach the problem without actually solving it, without revealing the final answer, and without performing the decisive arithmetic or algebraic simplification that gives the answer away. Focus on strategy, concepts, what to notice, and self-checks. End by asking whether the student wants the answer or wants to solve it alone. ${mathFormattingRules}`
             }
           ]
         },
@@ -109,7 +112,7 @@ app.post("/api/tutor/answer", async (req, res) => {
             {
               type: "input_text",
               text:
-                "You are a clear math tutor. The student has now explicitly asked for the answer. Provide the final answer, a concise worked solution, and a short way to verify it. Keep the explanation digestible for a student."
+                `You are a clear math tutor. The student has now explicitly asked for the answer. Provide the final answer, a concise worked solution, and a short way to verify it. Keep the explanation digestible for a student. The field named finalAnswer must begin with the exact phrase "The answer is" and must present the final result in boxed LaTeX using \\(\\boxed{...}\\) or \\[\\boxed{...}\\]. ${mathFormattingRules}`
             }
           ]
         },

@@ -2,6 +2,7 @@
 body.theme-dark {
   --bg: #0a0f1a;
   --bg-2: #0f1728;
+  --bg-3: #0e1524;
   --panel: rgba(14, 21, 36, 0.88);
   --panel-strong: #111b2e;
   --panel-soft: rgba(255, 255, 255, 0.04);
@@ -12,11 +13,17 @@ body.theme-dark {
   --blue-strong: #2f7fe0;
   --green: #2fd28b;
   --shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+  --sidebar-bg-top: rgba(10, 15, 26, 0.92);
+  --sidebar-bg-bottom: rgba(13, 20, 34, 0.96);
+  --radial-top: rgba(78, 161, 255, 0.16);
+  --radial-bottom: rgba(47, 210, 139, 0.12);
+  --tabs-bg: rgba(13, 20, 34, 0.75);
 }
 
 body.theme-light {
   --bg: #edf3fb;
   --bg-2: #f7faff;
+  --bg-3: #eef4fc;
   --panel: rgba(255, 255, 255, 0.88);
   --panel-strong: #ffffff;
   --panel-soft: rgba(32, 70, 122, 0.06);
@@ -27,6 +34,11 @@ body.theme-light {
   --blue-strong: #2369b9;
   --green: #16845a;
   --shadow: 0 20px 50px rgba(44, 76, 120, 0.12);
+  --sidebar-bg-top: rgba(236, 244, 255, 0.94);
+  --sidebar-bg-bottom: rgba(247, 250, 255, 0.98);
+  --radial-top: rgba(46, 132, 234, 0.14);
+  --radial-bottom: rgba(22, 132, 90, 0.08);
+  --tabs-bg: rgba(255, 255, 255, 0.72);
 }
 
 * {
@@ -43,9 +55,9 @@ body {
   font-family: "Manrope", sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at top center, rgba(78, 161, 255, 0.16), transparent 22%),
-    radial-gradient(circle at bottom left, rgba(47, 210, 139, 0.12), transparent 20%),
-    linear-gradient(180deg, #0a0f1a 0%, #0e1524 100%);
+    radial-gradient(circle at top center, var(--radial-top), transparent 22%),
+    radial-gradient(circle at bottom left, var(--radial-bottom), transparent 20%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-3) 100%);
 }
 
 button,
@@ -69,7 +81,7 @@ button:hover {
 
 .sidebar {
   border-right: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(10, 15, 26, 0.92), rgba(13, 20, 34, 0.96));
+  background: linear-gradient(180deg, var(--sidebar-bg-top), var(--sidebar-bg-bottom));
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -360,7 +372,7 @@ h1 {
   padding: 8px;
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(13, 20, 34, 0.75);
+  background: var(--tabs-bg);
 }
 
 .mode-tab {

@@ -322,9 +322,9 @@ function renderExplanation(data) {
   results.classList.remove("hidden");
 
   problemType.textContent = data.problemType;
-  summary.textContent = data.summary;
-  encouragement.textContent = data.encouragement;
-  followUpQuestion.textContent = data.followUpQuestion;
+  summary.textContent = normalizeMathText(data.summary);
+  encouragement.textContent = normalizeMathText(data.encouragement);
+  followUpQuestion.textContent = normalizeMathText(data.followUpQuestion);
 
   renderList(whatToNotice, data.whatToNotice);
   renderList(strategy, data.strategy);
@@ -336,8 +336,8 @@ function renderAnswer(data) {
   answerCard.classList.remove("hidden");
   selfSolveMessage.classList.add("hidden");
 
-  finalAnswer.textContent = data.finalAnswer;
-  nextStep.textContent = data.nextStep;
+  finalAnswer.textContent = normalizeFinalAnswer(data.finalAnswer);
+  nextStep.textContent = normalizeMathText(data.nextStep);
 
   renderList(workedSolution, data.workedSolution);
   renderPlainSteps(verification, data.verification);
@@ -349,7 +349,7 @@ function renderList(element, items) {
 
   items.forEach((item) => {
     const li = document.createElement("li");
-    li.textContent = item;
+    li.textContent = normalizeMathText(item);
     element.appendChild(li);
   });
 }
@@ -360,7 +360,7 @@ function renderPlainSteps(element, items) {
   items.forEach((item) => {
     const paragraph = document.createElement("p");
     paragraph.className = "plain-step";
-    paragraph.textContent = item;
+    paragraph.textContent = normalizeMathText(item);
     element.appendChild(paragraph);
   });
 }
@@ -665,6 +665,44 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function normalizeFinalAnswer(value) {
+  const normalizedInput = normalizeMathText(value);
+
+  if (typeof normalizedInput !== "string") {
+    return "";
+  }
+
+  const normalized = normalizedInput.trim().replace(/\\\\/g, "\\");
+  const boxedMatch = normalized.match(/\\?boxed\{([\s\S]+)\}/i);
+
+  if (boxedMatch) {
+    return `The answer is \\(\\boxed{${boxedMatch[1].trim()}}\\)`;
+  }
+
+  if (/The answer is/i.test(normalized)) {
+    return normalized;
+  }
+
+  return `The answer is ${normalized}`;
+}
+
+function normalizeMathText(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value
+    .replace(/\u000c(?=rac\{)/g, "\\f")
+    .replace(/\t(?=ext\{)/g, "\\t")
+    .replace(/\u0008(?=oxed\{)/g, "\\b")
+    .replace(/\\\(\s*frac\{/g, "\\(\\frac{")
+    .replace(/\\\(\s*text\{/g, "\\(\\text{")
+    .replace(/\\\(\s*boxed\{/g, "\\(\\boxed{")
+    .replace(/\\\[\s*frac\{/g, "\\[\\frac{")
+    .replace(/\\\[\s*text\{/g, "\\[\\text{")
+    .replace(/\\\[\s*boxed\{/g, "\\[\\boxed{");
 }
 
 function renderMath(container) {
