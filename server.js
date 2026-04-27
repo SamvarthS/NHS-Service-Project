@@ -33,6 +33,7 @@ const answerSchema = z.object({
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static("public"));
+app.use("/vendor/katex", express.static("node_modules/katex/dist"));
 
 app.get("/api/health", (_req, res) => {
   res.json({

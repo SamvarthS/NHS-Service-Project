@@ -24,6 +24,10 @@ const modalOverlay = document.querySelector("#modalOverlay");
 const modalTitle = document.querySelector("#modalTitle");
 const modalBody = document.querySelector("#modalBody");
 const closeModalButton = document.querySelector("#closeModalButton");
+const chatMenu = document.querySelector("#chatMenu");
+const openChatAction = document.querySelector("#openChatAction");
+const pinChatAction = document.querySelector("#pinChatAction");
+const deleteChatAction = document.querySelector("#deleteChatAction");
 const modeTabs = [...document.querySelectorAll(".mode-tab")];
 const menuItems = [...document.querySelectorAll(".menu-item")];
 
@@ -127,6 +131,8 @@ let currentQuestion = "";
 let currentMode = "Math Tutor";
 let recentChatItems = loadRecentChats();
 let isMathInputOpen = false;
+let mathRendererPromise = null;
+let activeChatMenuId = null;
 
 initialize();
 
@@ -242,6 +248,15 @@ modalOverlay.addEventListener("click", (event) => {
   }
 });
 
+document.addEventListener("click", (event) => {
+  if (!chatMenu.contains(event.target) && !event.target.closest(".recent-chat-button")) {
+    closeChatMenu();
+  }
+});
+
+window.addEventListener("resize", closeChatMenu);
+window.addEventListener("scroll", closeChatMenu, true);
+
 modeTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     setMode(tab.dataset.mode || "Math Tutor");
@@ -261,6 +276,48 @@ questionInput.addEventListener("keydown", (event) => {
   }
 });
 
+openChatAction.addEventListener("click", () => {
+  const chat = getActiveChatMenuItem();
+
+  if (!chat) {
+    return;
+  }
+
+  loadChat(chat.question, chat.mode);
+  setStatus("Recent chat loaded.");
+  closeChatMenu();
+});
+
+pinChatAction.addEventListener("click", () => {
+  const chat = getActiveChatMenuItem();
+
+  if (!chat) {
+    return;
+  }
+
+  recentChatItems = recentChatItems.map((item) =>
+    item.id === chat.id ? { ...item, pinned: !item.pinned } : item
+  );
+  persistRecentChats();
+  renderRecentChats();
+  setStatus(chat.pinned ? "Chat unpinned." : "Chat pinned.");
+  closeChatMenu();
+});
+
+deleteChatAction.addEventListener("click", () => {
+  const chat = getActiveChatMenuItem();
+
+  if (!chat) {
+    return;
+  }
+
+  recentChatItems = recentChatItems.filter((item) => item.id !== chat.id);
+  persistRecentChats();
+  renderRecentChats();
+  setStatus("Chat deleted.");
+  closeChatMenu();
+});
+
 function renderExplanation(data) {
   results.classList.remove("hidden");
 
@@ -272,6 +329,7 @@ function renderExplanation(data) {
   renderList(whatToNotice, data.whatToNotice);
   renderList(strategy, data.strategy);
   renderList(checkpoints, data.checkpoints);
+  renderMath(results);
 }
 
 function renderAnswer(data) {
@@ -282,7 +340,8 @@ function renderAnswer(data) {
   nextStep.textContent = data.nextStep;
 
   renderList(workedSolution, data.workedSolution);
-  renderList(verification, data.verification);
+  renderPlainSteps(verification, data.verification);
+  renderMath(answerCard);
 }
 
 function renderList(element, items) {
@@ -292,6 +351,17 @@ function renderList(element, items) {
     const li = document.createElement("li");
     li.textContent = item;
     element.appendChild(li);
+  });
+}
+
+function renderPlainSteps(element, items) {
+  element.innerHTML = "";
+
+  items.forEach((item) => {
+    const paragraph = document.createElement("p");
+    paragraph.className = "plain-step";
+    paragraph.textContent = item;
+    element.appendChild(paragraph);
   });
 }
 
@@ -358,19 +428,21 @@ function activateMenu(menu) {
 }
 
 function saveRecentChat(question) {
+  const existingChat = recentChatItems.find((item) => item.question === question && item.mode === currentMode);
   const entry = {
-    id: crypto.randomUUID(),
+    id: existingChat?.id || crypto.randomUUID(),
     question,
     mode: currentMode,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    pinned: existingChat?.pinned || false
   };
 
-  recentChatItems = [
+  recentChatItems = sortRecentChats([
     entry,
-    ...recentChatItems.filter((item) => item.question !== question)
-  ].slice(0, maxRecentChats);
+    ...recentChatItems.filter((item) => item.id !== entry.id)
+  ]).slice(0, maxRecentChats);
 
-  localStorage.setItem(chatStorageKey, JSON.stringify(recentChatItems));
+  persistRecentChats();
   renderRecentChats();
 }
 
@@ -386,13 +458,14 @@ function renderRecentChats() {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "recent-chat-button";
+    button.classList.toggle("is-pinned", Boolean(item.pinned));
     button.innerHTML = `
       <span class="recent-chat-title">${escapeHtml(truncate(item.question, 42))}</span>
-      <span class="recent-chat-meta">${escapeHtml(item.mode)} • ${formatTime(item.timestamp)}</span>
+      <span class="recent-chat-meta">${item.pinned ? "Pinned • " : ""}${escapeHtml(item.mode)} • ${formatTime(item.timestamp)}</span>
     `;
-    button.addEventListener("click", () => {
-      loadChat(item.question, item.mode);
-      setStatus("Recent chat loaded.");
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleChatMenu(item.id, button);
     });
     recentChats.appendChild(button);
   });
@@ -510,7 +583,7 @@ function handleMathKeyClick(key) {
 function loadRecentChats() {
   try {
     const parsed = JSON.parse(localStorage.getItem(chatStorageKey) || "[]");
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? sortRecentChats(parsed) : [];
   } catch {
     return [];
   }
@@ -544,6 +617,47 @@ function formatTime(timestamp) {
   }).format(timestamp);
 }
 
+function persistRecentChats() {
+  recentChatItems = sortRecentChats(recentChatItems).slice(0, maxRecentChats);
+  localStorage.setItem(chatStorageKey, JSON.stringify(recentChatItems));
+}
+
+function sortRecentChats(items) {
+  return [...items].sort((a, b) => {
+    if (Boolean(a.pinned) !== Boolean(b.pinned)) {
+      return a.pinned ? -1 : 1;
+    }
+
+    return (b.timestamp || 0) - (a.timestamp || 0);
+  });
+}
+
+function toggleChatMenu(chatId, button) {
+  if (activeChatMenuId === chatId && !chatMenu.classList.contains("hidden")) {
+    closeChatMenu();
+    return;
+  }
+
+  activeChatMenuId = chatId;
+  const chat = getActiveChatMenuItem();
+
+  pinChatAction.textContent = chat?.pinned ? "Unpin" : "Pin";
+
+  const rect = button.getBoundingClientRect();
+  chatMenu.style.top = `${Math.min(rect.bottom + 8, window.innerHeight - 140)}px`;
+  chatMenu.style.left = `${Math.min(rect.left, window.innerWidth - 200)}px`;
+  chatMenu.classList.remove("hidden");
+}
+
+function closeChatMenu() {
+  activeChatMenuId = null;
+  chatMenu.classList.add("hidden");
+}
+
+function getActiveChatMenuItem() {
+  return recentChatItems.find((item) => item.id === activeChatMenuId) || null;
+}
+
 function escapeHtml(value) {
   return value
     .replaceAll("&", "&amp;")
@@ -551,6 +665,72 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function renderMath(container) {
+  ensureMathRenderer()
+    .then(() => {
+      window.renderMathInElement(container, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\(", right: "\\)", display: false },
+          { left: "\\[", right: "\\]", display: true }
+        ],
+        throwOnError: false
+      });
+    })
+    .catch(() => {
+      setStatus("Math rendering did not load. Restart the server and refresh the page.", true);
+    });
+}
+
+function ensureMathRenderer() {
+  if (typeof window.renderMathInElement === "function") {
+    return Promise.resolve();
+  }
+
+  if (mathRendererPromise) {
+    return mathRendererPromise;
+  }
+
+  mathRendererPromise = loadScript("/vendor/katex/katex.min.js")
+    .then(() => loadScript("/vendor/katex/contrib/auto-render.min.js"))
+    .then(() => {
+      if (typeof window.renderMathInElement !== "function") {
+        throw new Error("KaTeX auto-render failed to initialize.");
+      }
+    });
+
+  return mathRendererPromise;
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const existingScript = document.querySelector(`script[src="${src}"]`);
+
+    if (existingScript?.dataset.loaded === "true") {
+      resolve();
+      return;
+    }
+
+    const script = existingScript || document.createElement("script");
+
+    script.src = src;
+    script.async = true;
+
+    script.addEventListener("load", () => {
+      script.dataset.loaded = "true";
+      resolve();
+    }, { once: true });
+
+    script.addEventListener("error", () => {
+      reject(new Error(`Failed to load ${src}`));
+    }, { once: true });
+
+    if (!existingScript) {
+      document.body.appendChild(script);
+    }
+  });
 }
 
 async function postJson(url, payload) {

@@ -10,6 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="/vendor/katex/katex.min.css" />
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
@@ -170,7 +171,7 @@
               </div>
               <div>
                 <h4>How To Verify</h4>
-                <ul id="verification" class="bullet-list"></ul>
+                <div id="verification" class="plain-steps"></div>
               </div>
             </div>
             <p id="nextStep" class="next-step"></p>
@@ -189,6 +190,16 @@
       </div>
     </div>
 
+    <div id="chatMenu" class="chat-menu hidden">
+      <button id="openChatAction" class="chat-menu-item" type="button">Open</button>
+      <button id="pinChatAction" class="chat-menu-item" type="button">Pin</button>
+      <button id="deleteChatAction" class="chat-menu-item chat-menu-item-danger" type="button">
+        Delete
+      </button>
+    </div>
+
+    <script defer src="/vendor/katex/katex.min.js"></script>
+    <script defer src="/vendor/katex/contrib/auto-render.min.js"></script>
     <script src="/app.js" type="module"></script>
   </body>
 </html>
