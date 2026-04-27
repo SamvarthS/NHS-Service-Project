@@ -693,8 +693,8 @@ function ensureMathRenderer() {
     return mathRendererPromise;
   }
 
-  mathRendererPromise = loadScript("/vendor/katex/katex.min.js")
-    .then(() => loadScript("/vendor/katex/contrib/auto-render.min.js"))
+  mathRendererPromise = loadScript("https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js")
+    .then(() => loadScript("https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"))
     .then(() => {
       if (typeof window.renderMathInElement !== "function") {
         throw new Error("KaTeX auto-render failed to initialize.");
