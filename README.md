@@ -1,6 +1,6 @@
 # AI Math Tutor
 
-A small math tutor web app that uses the OpenAI API to:
+A small math tutor web app that:
 
 - explain how to approach a math problem
 - avoid revealing the answer at first
