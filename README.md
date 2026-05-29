@@ -6,6 +6,7 @@ A small math tutor web app that:
 - avoid revealing the answer at first
 - ask the student whether they want the answer or want to solve it on their own
 - reveal the answer only after the student asks for it
+- hosted on https://www.samvarth-nhs-project.com/
 
 ## Setup
 
