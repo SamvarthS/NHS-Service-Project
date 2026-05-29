@@ -32,6 +32,27 @@ npm start
 
 5. Open `http://localhost:3000`.
 
+## Vercel backend
+
+1. Deploy this repo to Vercel as an `Other` project.
+2. Add these environment variables in Vercel:
+
+```env
+OPENAI_API_KEY=your_key_here
+OPENAI_MODEL=gpt-4o-mini
+ALLOWED_ORIGINS=https://your-site.github.io,https://your-custom-domain.com
+```
+
+3. After Vercel gives you a backend URL like `https://your-project.vercel.app`, update `config.js`:
+
+```js
+window.APP_CONFIG = {
+  API_BASE_URL: "https://your-project.vercel.app"
+};
+```
+
+4. Redeploy GitHub Pages so the frontend picks up the new backend URL.
+
 ## Environment variables
 
 - `OPENAI_API_KEY`: required
@@ -43,6 +64,8 @@ npm start
 ## Notes
 
 - The backend keeps your API key out of the browser.
+- The Vercel serverless entrypoint lives at `api/index.js`.
+- `server.js` still runs the full app locally, including the static frontend.
 - The explanation route uses structured outputs so the UI can render distinct tutoring sections cleanly.
 - The frontend entry files for GitHub Pages now live at the repo root: `index.html`, `style.css`, and `app.js`.
 - If you host the frontend and backend on different domains, set `window.APP_CONFIG.API_BASE_URL` in `config.js` to your backend URL, for example `https://your-api.onrender.com`.
