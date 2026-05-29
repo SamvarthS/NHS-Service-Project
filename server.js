@@ -10,6 +10,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || "127.0.0.1";
 const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
 
 const hasApiKey = Boolean(process.env.OPENAI_API_KEY);
 const openai = hasApiKey ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
@@ -35,6 +36,28 @@ const mathFormattingRules =
   "Formatting rules: every mathematical expression must use valid LaTeX delimiters. Use \\(...\\) for inline math and \\[...\\] for display math. Never write plain-text math like x^2, 1/3, integral x^2 dx, or d/dx unless it is wrapped in LaTeX. Examples: write \\(x^2\\), \\(\\frac{1}{3}x^3 + C\\), \\[\\int x^2\\,dx\\], and \\(\\frac{d}{dx}(x^3) = 3x^2\\).";
 
 app.use(express.json({ limit: "1mb" }));
+app.use((req, res, next) => {
+  const requestOrigin = req.headers.origin;
+
+  if (!requestOrigin) {
+    next();
+    return;
+  }
+
+  if (allowedOrigins.length === 0 || allowedOrigins.includes(requestOrigin)) {
+    res.header("Access-Control-Allow-Origin", requestOrigin);
+    res.header("Vary", "Origin");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  }
+
+  if (req.method === "OPTIONS") {
+    res.sendStatus(204);
+    return;
+  }
+
+  next();
+});
 app.use(express.static(".", { dotfiles: "ignore", index: "index.html" }));
 
 app.get("/api/health", (_req, res) => {
@@ -165,4 +188,15 @@ function handleApiError(error, res) {
     "Something went wrong while contacting the OpenAI API.";
 
   res.status(statusCode).json({ error: message });
+}
+
+function parseAllowedOrigins(value) {
+  if (typeof value !== "string" || value.trim() === "") {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 }

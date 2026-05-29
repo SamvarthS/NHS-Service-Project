@@ -42,6 +42,8 @@ const finalAnswer = document.querySelector("#finalAnswer");
 const workedSolution = document.querySelector("#workedSolution");
 const verification = document.querySelector("#verification");
 const nextStep = document.querySelector("#nextStep");
+const appConfig = window.APP_CONFIG || {};
+const apiBaseUrl = normalizeApiBaseUrl(appConfig.API_BASE_URL);
 
 const chatStorageKey = "nhs-math-tutor-recent-chats";
 const themeStorageKey = "nhs-math-tutor-theme";
@@ -772,7 +774,7 @@ function loadScript(src) {
 }
 
 async function postJson(url, payload) {
-  const response = await fetch(url, {
+  const response = await fetch(getApiUrl(url), {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -787,4 +789,16 @@ async function postJson(url, payload) {
   }
 
   return data;
+}
+
+function getApiUrl(path) {
+  return apiBaseUrl ? `${apiBaseUrl}${path}` : path;
+}
+
+function normalizeApiBaseUrl(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim().replace(/\/+$/, "");
 }
